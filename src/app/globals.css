@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 255 255 255;
+  --foreground: 17 24 39;
+
+  --card: 255 255 255;
+  --muted: 249 250 251;
+  --border: 229 231 235;
+
+  --primary: 42 157 143;
+  --secondary: 244 162 97;
+  --accent: 231 111 81;
+
+  --radius: 16px;
+}
+
+.dark {
+  --background: 15 17 22;
+  --foreground: 243 244 246;
+
+  --card: 26 29 36;
+  --muted: 31 41 55;
+  --border: 55 65 81;
+}
+
+@layer base {
+  html { text-rendering: geometricPrecision; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    letter-spacing: 0.01em;
+  }
+
+  h1 { @apply text-4xl md:text-6xl font-semibold tracking-tightish; }
+  h2 { @apply text-3xl md:text-4xl font-semibold tracking-tightish; }
+  h3 { @apply text-xl md:text-2xl font-semibold tracking-tightish; }
+
+  p { @apply leading-comfy text-[15px] md:text-base text-gray-600 dark:text-gray-300; }
+  a { @apply underline-offset-4; }
+  a:hover { @apply text-primary-600 dark:text-primary-400; }
+}
+
+@layer components {
+  .section { @apply py-16 md:py-24; }
+  .section-muted { @apply bg-gray-50 dark:bg-gray-900; }
+
+  .bg-grid-subtle { position: relative; isolation: isolate; }
+  .bg-grid-subtle::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.45;
+    background-image:
+      linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at 50% 15%, black 0%, transparent 60%);
+  }
+  .dark .bg-grid-subtle::before {
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
+  }
+}
