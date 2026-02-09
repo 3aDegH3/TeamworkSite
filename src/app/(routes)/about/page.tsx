@@ -20,7 +20,6 @@ export default function AboutPage() {
       <HeroSection />
       <IdentitySection />
       <MindsetSection />
-      <ProcessSection />
       <QualitySection />
       <CtaSection />
       <VisualSignature />

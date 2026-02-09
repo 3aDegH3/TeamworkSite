@@ -6,7 +6,7 @@ export default function AuthShell() {
   return (
     <div className="w-full max-w-lg mx-auto">
       <div 
-        className="rounded-2xl shadow-xl backdrop-blur-md bg-white/90 p-6 sm:p-8 md:p-10 border border-gray-100/50 overflow-y-auto max-h-[80vh]"
+        className="rounded-2xl shadow-xl backdrop-blur-md bg-white/90 p-6 sm:p-8 md:p-10 border border-gray-100/50 overflow-hidden"
         style={{
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)'
         }}

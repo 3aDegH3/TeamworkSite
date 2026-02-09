@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, Sparkles, Zap, Shield, Rocket, Home, Users, MessageSquare } from 'lucide-react'
+import { Menu, X, ChevronDown, Sparkles, Zap, Shield, Rocket, Home, Users, MessageSquare, LogIn } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
 import { cn } from '@/src/lib/utils'
 
@@ -22,7 +22,6 @@ const navigation = [
     ]
   },
   { name: 'نمونه کارها', href: '/portfolio', icon: Sparkles },
-  { name: 'تیم ما', href: '/team', icon: Users },
   { name: 'درباره ما', href: '/about', icon: Shield },
   { name: 'تماس با ما', href: '/contact', icon: MessageSquare },
 ]
@@ -71,12 +70,12 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 space-x-reverse group">
               <div className="relative">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-500 flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                   و
                 </div>
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-primary-600 group-hover:to-secondary-500 transition-all duration-300">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-primary-600 group-hover:to-secondary-500 transition-all duration-300">
                 وب‌تری
               </span>
             </Link>
@@ -88,17 +87,17 @@ export default function Header() {
                   {item.children ? (
                     <button
                       className={cn(
-                        "flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300",
+                        "flex items-center px-4 py-2 rounded-xl text-base font-medium transition-all duration-300",
                         pathname.startsWith(item.href) || openDropdown === item.name
                           ? "text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/20"
                           : "text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
                       )}
                       onMouseEnter={() => handleDropdownOpen(item.name)}
                     >
-                      {item.icon && <item.icon className="ml-2 h-4 w-4" />}
+                      {item.icon && <item.icon className="ml-2 h-5 w-5" />}
                       {item.name}
                       <ChevronDown className={cn(
-                        "mr-1 h-4 w-4 transition-transform duration-300",
+                        "mr-1 h-5 w-5 transition-transform duration-300",
                         openDropdown === item.name && "rotate-180"
                       )} />
                     </button>
@@ -106,13 +105,13 @@ export default function Header() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300",
+                        "flex items-center px-4 py-2 rounded-xl text-base font-medium transition-all duration-300",
                         pathname === item.href
                           ? "text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/20"
                           : "text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
                       )}
                     >
-                      {item.icon && <item.icon className="ml-2 h-4 w-4" />}
+                      {item.icon && <item.icon className="ml-2 h-5 w-5" />}
                       {item.name}
                     </Link>
                   )}
@@ -144,10 +143,10 @@ export default function Header() {
                                 <div className="w-4 h-4 rounded bg-gradient-to-br from-primary-500 to-secondary-500"></div>
                               </div>
                               <div>
-                                <div className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                <div className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors text-base">
                                   {child.name}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                   {child.description}
                                 </div>
                               </div>
@@ -161,19 +160,32 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* CTA Button */}
+            {/* CTA Buttons */}
             <div className="hidden lg:flex items-center space-x-3 space-x-reverse">
-              {/* فقط لینک اضافه شد */}
+              {/* Enhanced Login Button */}
               <Link href="/auth">
-                <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
-                  ورود
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="relative overflow-hidden group border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-900 text-base text-primary-700 dark:text-primary-300 hover:border-primary-400 dark:hover:border-primary-600 hover:shadow-md transition-all duration-300"
+                >
+                  <span className="relative z-10 flex items-center">
+                    <LogIn className="ml-2 h-5 w-5" />
+                    ورود
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-900/20 dark:to-secondary-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
 
-              <Button variant="gradient" size="sm" className="group relative overflow-hidden">
+              {/* Project Button */}
+              <Button 
+                variant="gradient" 
+                size="sm" 
+                className="group relative overflow-hidden text-base"
+              >
                 <span className="relative z-10 flex items-center">
                   شروع پروژه
-                  <Rocket className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <Rocket className="mr-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Button>
@@ -203,10 +215,10 @@ export default function Header() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-2 space-x-reverse">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-500 flex items-center justify-center text-white font-bold text-xl">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-500 flex items-center justify-center text-white font-bold text-2xl">
                   و
                 </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">وب‌تری</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">وب‌تری</span>
               </div>
               <button
                 className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -222,7 +234,7 @@ export default function Header() {
                   {item.children ? (
                     <div>
                       <button
-                        className="flex items-center justify-between w-full p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors font-medium"
+                        className="flex items-center justify-between w-full p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors font-medium text-base"
                         onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
                       >
                         <div className="flex items-center">
@@ -230,7 +242,7 @@ export default function Header() {
                           {item.name}
                         </div>
                         <ChevronDown className={cn(
-                          "h-4 w-4 transition-transform",
+                          "h-5 w-5 transition-transform",
                           openDropdown === item.name && "rotate-180"
                         )} />
                       </button>
@@ -249,8 +261,8 @@ export default function Header() {
                               setIsMenuOpen(false)
                             }}
                           >
-                            <div className="font-medium">{child.name}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">{child.description}</div>
+                            <div className="font-medium text-base">{child.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-500 mt-1">{child.description}</div>
                           </Link>
                         ))}
                       </div>
@@ -259,7 +271,7 @@ export default function Header() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center p-3 rounded-xl font-medium transition-colors",
+                        "flex items-center p-3 rounded-xl font-medium transition-colors text-base",
                         pathname === item.href
                           ? "text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/20"
                           : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
@@ -275,14 +287,19 @@ export default function Header() {
             </nav>
             
             <div className="mt-8 space-y-3">
-              {/* فقط لینک اضافه شد */}
+              {/* Enhanced Login Button for Mobile */}
               <Link href="/auth">
-                <Button variant="outline" fullWidth>
+                <Button 
+                  variant="outline" 
+                  fullWidth
+                  className="border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-900 text-base text-primary-700 dark:text-primary-300 hover:border-primary-400 dark:hover:border-primary-600 hover:shadow-md transition-all duration-300"
+                >
+                  <LogIn className="ml-2 h-5 w-5" />
                   ورود
                 </Button>
               </Link>
 
-              <Button variant="gradient" fullWidth>
+              <Button variant="gradient" fullWidth className="text-base">
                 شروع پروژه
               </Button>
             </div>
@@ -290,7 +307,7 @@ export default function Header() {
             <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20">
               <div className="flex items-center mb-2">
                 <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400 ml-2" />
-                <div className="font-medium text-gray-900 dark:text-white">ویژگی برتر</div>
+                <div className="font-medium text-gray-900 dark:text-white text-base">ویژگی برتر</div>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 با وب‌تری، پروژه بعدی خود را به سطح جدیدی از کیفیت و نوآوری برسانید.
