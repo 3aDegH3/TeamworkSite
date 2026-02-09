@@ -1,10 +1,13 @@
+// src/components/ui/card.tsx
 import * as React from 'react'
+import { cn } from '@/src/lib/utils'
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   className?: string
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'elevated' | 'outlined' | 'glass'
 }
 
 export function Card({
@@ -12,6 +15,7 @@ export function Card({
   className = '',
   hover = false,
   padding = 'md',
+  variant = 'default',
   ...props
 }: CardProps) {
   const paddingClasses = {
@@ -21,23 +25,32 @@ export function Card({
     lg: 'p-8'
   }
 
-  const hoverClass = hover ? 'hover:shadow-lg transition-shadow duration-300' : ''
+  const variantClasses = {
+    default: 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm',
+    elevated: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-900 shadow-lg',
+    outlined: 'bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700',
+    glass: 'bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 shadow-lg'
+  }
+
+  const hoverClass = hover ? 'hover:shadow-xl hover:-translate-y-1 transition-all duration-300 hover-lift' : ''
 
   return (
     <div
       {...props}
-      className={`
-        bg-white dark:bg-gray-900 
-        rounded-xl border border-gray-200 dark:border-gray-800 
-        shadow-sm ${paddingClasses[padding]} ${hoverClass} ${className}
-      `}
+      className={cn(
+        'rounded-xl',
+        variantClasses[variant],
+        paddingClasses[padding],
+        hoverClass,
+        className
+      )}
     >
       {children}
     </div>
   )
 }
 
-// برای بخش‌های مختلف کارت
+// Enhanced card subcomponents with better styling
 export function CardHeader({
   children,
   className = '',
@@ -56,7 +69,7 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement> & { children: React.ReactNode }) {
   return (
-    <h3 className={`text-xl font-semibold text-gray-900 dark:text-white ${className}`} {...props}>
+    <h3 className={`text-xl font-bold text-gray-900 dark:text-white ${className}`} {...props}>
       {children}
     </h3>
   )

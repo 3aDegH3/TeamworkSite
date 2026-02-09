@@ -1,7 +1,11 @@
-import type { NextConfig } from 'next'
+// next.config.ts
+import type { Config } from 'next'
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const config: Config = {
+  images: {
+    domains: ['sfile.chatglm.cn'],
+  },
+  // ... rest of your config
 }
 
-export default nextConfig
+export default config

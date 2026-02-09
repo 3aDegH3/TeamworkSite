@@ -1,32 +1,26 @@
+// src/components/shared/theme-toggle.tsx
 'use client'
 
-import { useTheme } from '@/src/constants/theme-provider'
 import { Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useTheme } from '@/src/constants/theme-provider'
+import { Button } from '@/src/components/ui/button'
 
-export default function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return (
-      <div className="w-10 h-10 rounded-full bg-secondary animate-pulse" />
-    )
-  }
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
 
   return (
-    <button
-      onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 
-                 flex items-center justify-center transition-colors"
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+      className="p-2 rounded-lg"
+      aria-label="تغییر حالت تاریک/روشن"
     >
-      <Sun className="absolute h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-    </button>
+      {theme === 'light' ? (
+        <Moon className="h-5 w-5" />
+      ) : (
+        <Sun className="h-5 w-5" />
+      )}
+    </Button>
   )
 }
