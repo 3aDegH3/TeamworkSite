@@ -5,33 +5,36 @@ import { useEffect, useRef, useState } from 'react'
 // Configuration parameters for easy tweaking
 const CONFIG = {
   // Particle settings
-  MAX_PARTICLES: 80,
-  PARTICLE_LIFETIME: 4000, // ms
-  SPAWN_RATE: 2, // particles per mouse move event
+  MAX_PARTICLES: 300, // Increased for desktop
+  PARTICLE_LIFETIME: 5000, // ms
+  MIN_SPAWN_RATE: 6, // minimum particles per mouse move event
+  MAX_SPAWN_RATE: 20, // maximum particles per mouse move event
+  SPAWN_RADIUS: 300, // radius of spawning area around mouse
   
   // Visual settings
-  BASE_SIZE: 4, // minimum particle size
-  SIZE_VARIANCE: 12, // size variance
-  BASE_SPEED: 0.15, // base movement speed
-  SPEED_VARIANCE: 0.3, // speed variance
+  BASE_SIZE: 6, // minimum particle size
+  SIZE_VARIANCE: 24, // size variance
+  BASE_SPEED: 0.1, // base movement speed
+  SPEED_VARIANCE: 0.15, // speed variance
+  OUTWARD_FORCE: 0.03, // gentle outward dispersal force
   
   // Mouse interaction
-  MOUSE_INFLUENCE_RADIUS: 120, // pixels
-  MOUSE_INFLUENCE_STRENGTH: 0.02, // how much mouse affects particles
+  MOUSE_INFLUENCE_RADIUS: 150, // pixels
+  MOUSE_INFLUENCE_STRENGTH: 0.015, // how much mouse affects particles
   
   // Performance
   TARGET_FPS: 60,
   RESIZE_DEBOUNCE: 200, // ms
 }
 
-// Light color palette for white background
+// Updated color palette with the requested soft colors
 const COLOR_PALETTE = [
-  { r: 42, g: 157, b: 143, a: 0.15 },  // primary
-  { r: 244, g: 162, b: 97, a: 0.15 },   // secondary
-  { r: 231, g: 111, b: 81, a: 0.15 },    // accent
-  { r: 100, g: 200, b: 255, a: 0.12 },  // light blue
-  { r: 255, g: 100, b: 200, a: 0.12 },  // pink
-  { r: 100, g: 255, b: 200, a: 0.12 },  // mint
+  { r: 77, g: 208, b: 225, a: 0.15 },  // teal
+  { r: 165, g: 241, b: 215, a: 0.15 }, // mint
+  { r: 129, g: 212, b: 250, a: 0.12 }, // soft blue
+  { r: 255, g: 204, b: 188, a: 0.15 }, // peach
+  { r: 255, g: 171, b: 145, a: 0.15 }, // warm coral
+  { r: 206, g: 147, b: 216, a: 0.12 }, // subtle purple
 ]
 
 // Particle class for object pooling
@@ -51,18 +54,33 @@ class Particle {
   reset(x: number, y: number, color: { r: number; g: number; b: number; a: number }) {
     this.x = x
     this.y = y
-    this.vx = (Math.random() - 0.5) * CONFIG.BASE_SPEED
-    this.vy = (Math.random() - 0.5) * CONFIG.BASE_SPEED
-    this.radius = CONFIG.BASE_SIZE + Math.random() * CONFIG.SIZE_VARIANCE
+    
+    // Log-normal distribution for size (more small, few large)
+    const normalRandom = () => {
+      let u = 0, v = 0
+      while(u === 0) u = Math.random()
+      while(v === 0) v = Math.random()
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
+    }
+    
+    const sizeFactor = Math.max(0.3, Math.min(2.0, 1.0 + 0.4 * normalRandom()))
+    this.radius = CONFIG.BASE_SIZE + Math.random() * CONFIG.SIZE_VARIANCE * sizeFactor
+    
+    // Gentle drift with mild scatter velocity
+    const angle = Math.random() * Math.PI * 2
+    const speed = CONFIG.BASE_SPEED + Math.random() * CONFIG.SPEED_VARIANCE
+    this.vx = Math.cos(angle) * speed
+    this.vy = Math.sin(angle) * speed
+    
     this.color = { ...color }
     this.createdAt = Date.now()
     this.depth = Math.random()
     this.rotation = Math.random() * Math.PI * 2
-    this.rotationSpeed = (Math.random() - 0.5) * 0.02
+    this.rotationSpeed = (Math.random() - 0.5) * 0.01 // Slower rotation for luxury feel
   }
   
   // Update particle position and properties
-  update(deltaTime: number, mouseX: number, mouseY: number) {
+  update(deltaTime: number, mouseX: number, mouseY: number, canvasWidth: number, canvasHeight: number) {
     const age = Date.now() - this.createdAt
     const lifeProgress = age / CONFIG.PARTICLE_LIFETIME
     
@@ -80,6 +98,19 @@ class Particle {
       this.vy += dy * force
     }
     
+    // Apply gentle outward dispersal from center
+    const centerX = canvasWidth / 2
+    const centerY = canvasHeight / 2
+    const centerDx = this.x - centerX
+    const centerDy = this.y - centerY
+    const centerDistance = Math.sqrt(centerDx * centerDx + centerDy * centerDy)
+    
+    if (centerDistance > 0) {
+      const outwardForce = CONFIG.OUTWARD_FORCE * (1 - lifeProgress * 0.5)
+      this.vx += (centerDx / centerDistance) * outwardForce
+      this.vy += (centerDy / centerDistance) * outwardForce
+    }
+    
     // Update position
     this.x += this.vx * deltaTime
     this.y += this.vy * deltaTime
@@ -87,12 +118,12 @@ class Particle {
     // Update rotation
     this.rotation += this.rotationSpeed * deltaTime
     
-    // Apply friction
-    this.vx *= 0.99
-    this.vy *= 0.99
+    // Apply friction for luxurious smooth motion
+    this.vx *= 0.995
+    this.vy *= 0.995
     
     // Fade out based on age
-    this.color.a *= 0.99
+    this.color.a *= 0.995
     
     return true  // Particle is still alive
   }
@@ -102,7 +133,7 @@ class Particle {
     const age = Date.now() - this.createdAt
     const lifeProgress = age / CONFIG.PARTICLE_LIFETIME
     
-    // Scale and blur based on depth
+    // Scale based on depth
     const scale = 0.5 + this.depth * 0.5
     const actualRadius = this.radius * scale * (1 - lifeProgress * 0.5)
     
@@ -139,11 +170,20 @@ class Particle {
   }
 }
 
-export default function AnimatedBackground() {
+interface AnimatedBackgroundProps {
+  backgroundColor?: string
+  className?: string
+}
+
+export default function AnimatedBackground({ 
+  backgroundColor = '#ffffff', 
+  className = '' 
+}: AnimatedBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>(0)
   const particlesRef = useRef<Particle[]>([])
   const mousePositionRef = useRef({ x: 0, y: 0 })
+  const lastMousePositionRef = useRef({ x: 0, y: 0 })
   const lastTimeRef = useRef<number>(0)
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isClient, setIsClient] = useState(false)
@@ -186,50 +226,75 @@ export default function AnimatedBackground() {
     
     window.addEventListener('resize', handleResize)
     
+    // Function to spawn a particle (defined before handleMouseMove to fix hoisting issue)
+    function spawnParticle(x: number, y: number, pool: Particle[]) {
+      // Find unused particle from pool
+      let particle: Particle | null = null
+      for (let j = 0; j < pool.length; j++) {
+        const p = pool[j]
+        if (Date.now() - p.createdAt > CONFIG.PARTICLE_LIFETIME) {
+          particle = p
+          break
+        }
+      }
+      
+      // If no unused particle found, reuse the oldest one
+      if (!particle && pool.length > 0) {
+        let oldestAge = 0
+        let oldestIndex = 0
+        
+        for (let j = 0; j < pool.length; j++) {
+          const age = Date.now() - pool[j].createdAt
+          if (age > oldestAge) {
+            oldestAge = age
+            oldestIndex = j
+          }
+        }
+        
+        particle = pool[oldestIndex]
+      }
+      
+      // Initialize particle
+      if (particle) {
+        const color = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]
+        
+        // Create circular spawning area with center bias
+        const angle = Math.random() * Math.PI * 2
+        const radiusBias = Math.random() * Math.random() // Squared for center bias
+        const radius = radiusBias * CONFIG.SPAWN_RADIUS
+        
+        const spawnX = x + Math.cos(angle) * radius
+        const spawnY = y + Math.sin(angle) * radius
+        
+        particle.reset(spawnX, spawnY, color)
+      }
+    }
+    
     // Track mouse position
     const handleMouseMove = (e: MouseEvent) => {
+      // Calculate mouse speed for dynamic spawn rate
+      const dx = e.clientX - lastMousePositionRef.current.x
+      const dy = e.clientY - lastMousePositionRef.current.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      
+      lastMousePositionRef.current = {
+        x: e.clientX,
+        y: e.clientY
+      }
+      
       mousePositionRef.current = {
         x: e.clientX,
         y: e.clientY
       }
       
-      // Spawn new particles at mouse position
-      for (let i = 0; i < CONFIG.SPAWN_RATE; i++) {
-        // Find unused particle from pool
-        let particle: Particle | null = null
-        for (let j = 0; j < particlePool.length; j++) {
-          const p = particlePool[j]
-          if (Date.now() - p.createdAt > CONFIG.PARTICLE_LIFETIME) {
-            particle = p
-            break
-          }
-        }
-        
-        // If no unused particle found, reuse the oldest one
-        if (!particle && particlePool.length > 0) {
-          let oldestAge = 0
-          let oldestIndex = 0
-          
-          for (let j = 0; j < particlePool.length; j++) {
-            const age = Date.now() - particlePool[j].createdAt
-            if (age > oldestAge) {
-              oldestAge = age
-              oldestIndex = j
-            }
-          }
-          
-          particle = particlePool[oldestIndex]
-        }
-        
-        // Initialize particle
-        if (particle) {
-          const color = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]
-          particle.reset(
-            mousePositionRef.current.x + (Math.random() - 0.5) * 20,
-            mousePositionRef.current.y + (Math.random() - 0.5) * 20,
-            color
-          )
-        }
+      // Dynamic spawn rate based on mouse speed
+      const speed = Math.min(distance, 100) / 100
+      const spawnCount = Math.floor(CONFIG.MIN_SPAWN_RATE + 
+        speed * (CONFIG.MAX_SPAWN_RATE - CONFIG.MIN_SPAWN_RATE))
+      
+      // Spawn new particles
+      for (let i = 0; i < spawnCount; i++) {
+        spawnParticle(e.clientX, e.clientY, particlePool)
       }
     }
     
@@ -250,8 +315,8 @@ export default function AnimatedBackground() {
         return
       }
       
-      // Clear canvas completely for white background
-      ctx.fillStyle = 'white'
+      // Clear canvas with background color
+      ctx.fillStyle = backgroundColor
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Update and draw particles
@@ -260,7 +325,9 @@ export default function AnimatedBackground() {
         const isAlive = particle.update(
           deltaTime / 16.67,  // Normalize to 60fps
           mousePositionRef.current.x,
-          mousePositionRef.current.y
+          mousePositionRef.current.y,
+          canvas.width,
+          canvas.height
         )
         
         if (isAlive) {
@@ -285,13 +352,13 @@ export default function AnimatedBackground() {
         clearTimeout(resizeTimeoutRef.current)
       }
     }
-  }, [isClient])
+  }, [isClient, backgroundColor])
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 z-0"
-      style={{ background: 'white' }}
+      className={`fixed inset-0 z-0 ${className}`}
+      style={{ background: backgroundColor }}
     />
   )
 }
