@@ -1,8 +1,7 @@
-// src/components/shared/theme-toggle.tsx
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/src/constants/theme-provider'
+import { useTheme } from '@/src/hooks/use-theme'
 import { Button } from '@/src/components/ui/button'
 
 export function ThemeToggle() {
@@ -16,11 +15,7 @@ export function ThemeToggle() {
       className="p-2 rounded-lg"
       aria-label="تغییر حالت تاریک/روشن"
     >
-      {theme === 'light' ? (
-        <Moon className="h-5 w-5" />
-      ) : (
-        <Sun className="h-5 w-5" />
-      )}
+      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
     </Button>
   )
 }

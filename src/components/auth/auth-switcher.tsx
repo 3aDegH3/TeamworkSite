@@ -10,13 +10,13 @@ export default function AuthSwitcher() {
   return (
     <div className="relative overflow-hidden">
       {/* Tabs */}
-      <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+      <div className="flex mb-6 bg-surface rounded-lg p-1 border border-border">
         <button
           type="button"
           className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
             authMode === 'login'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => setAuthMode('login')}
           aria-pressed={authMode === 'login'}
@@ -28,8 +28,8 @@ export default function AuthSwitcher() {
           type="button"
           className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
             authMode === 'register'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => setAuthMode('register')}
           aria-pressed={authMode === 'register'}
@@ -50,10 +50,7 @@ export default function AuthSwitcher() {
           }}
           aria-hidden={authMode !== 'login'}
         >
-          <LoginForm
-            onSwitchToRegister={() => setAuthMode('register')}
-            isActive={authMode === 'login'}
-          />
+          <LoginForm onSwitchToRegister={() => setAuthMode('register')} isActive={authMode === 'login'} />
         </div>
 
         {/* Register */}
@@ -66,10 +63,7 @@ export default function AuthSwitcher() {
           }}
           aria-hidden={authMode !== 'register'}
         >
-          <RegisterForm
-            onSwitchToLogin={() => setAuthMode('login')}
-            isActive={authMode === 'register'}
-          />
+          <RegisterForm onSwitchToLogin={() => setAuthMode('login')} isActive={authMode === 'register'} />
         </div>
       </div>
     </div>

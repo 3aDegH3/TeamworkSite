@@ -1,64 +1,142 @@
-// src/components/portfolio/data/projects.ts
-import type { Project } from '../types'
+import { Project } from '../types';
 
 export const projects: Project[] = [
   {
-    id: 'p1',
-    title: 'فروشگاه مینیمال (E-commerce)',
-    summary:
-      'طراحی و توسعه یک فروشگاه مینیمال با تمرکز روی تجربه خرید سریع، UI تمیز و ساختار مقیاس‌پذیر.',
-    category: 'فروشگاه اینترنتی',
-    stack: ['Next.js', 'Tailwind', 'Stripe', 'Headless CMS'],
-    cover: '/images/portfolio/shop/cover.jpg',
-    screens: [
-      { label: 'خانه', src: '/images/portfolio/shop/home.jpg' },
-      { label: 'محصول', src: '/images/portfolio/shop/product.jpg' },
-      { label: 'سبد خرید', src: '/images/portfolio/shop/cart.jpg' },
+    id: '1',
+    title: 'پلتفرم فروشگاهی دیجی‌کالا',
+    summary: 'طراحی و توسعه پلتفرم فروشگاهی جامع با قابلیت‌های مدیریت محصولات، پرداخت آنلاین و تحلیل داده‌ها.',
+    category: 'فروشگاهی',
+    coverImage: '/images/hero-team.jpg',
+    previewImage: '/images/quality-process.jpg',
+    technologies: ['React', 'Node.js', 'MongoDB', 'Stripe'],
+    services: ['طراحی UI/UX', 'توسعه وب', 'یکپارچه‌سازی پرداخت'],
+    highlights: [
+      'افزایش 35٪ نرخ تبدیل کاربران',
+      'بهینه‌سازی سرعت بارگذاری صفحات',
+      'طراحی واکنش‌گرا برای تمام دستگاه‌ها'
     ],
-    liveUrl: 'https://example.com',
-    year: '2025',
-    role: 'UI/UX + Front-End',
-    duration: '۳ هفته',
-    highlights: ['سرعت لود بالا', 'فلو خرید ساده', 'طراحی واکنش‌گرا'],
+    links: {
+      website: 'https://example.com/digikala'
+    }
   },
-
   {
-    id: 'p2',
-    title: 'داشبورد SaaS (Analytics)',
-    summary:
-      'داشبورد مدیریتی برای گزارش‌ها و تحلیل داده با تمرکز روی خوانایی، سلسله‌مراتب بصری و تعاملات نرم.',
-    category: 'SaaS / داشبورد',
-    stack: ['Next.js', 'TypeScript', 'Tailwind', 'Charts'],
-    cover: '/images/portfolio/saas/cover.jpg',
-    screens: [
-      { label: 'نمای کلی', src: '/images/portfolio/saas/overview.jpg' },
-      { label: 'گزارش‌ها', src: '/images/portfolio/saas/reports.jpg' },
-      { label: 'تنظیمات', src: '/images/portfolio/saas/settings.jpg' },
+    id: '2',
+    title: 'وب‌سایت شرکتی پارس‌خودرو',
+    summary: 'طراحی وب‌سایت رسمی شرکت پارس‌خودرو با معرفی محصولات، نمایندگی‌ها و خدمات پس از فروش.',
+    category: 'شرکتی',
+    coverImage: '/images/quality-process.jpg',
+    previewImage: '/images/hero-team.jpg',
+    technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Prisma'],
+    services: ['طراحی وب‌سایت', 'توسعه فرانت‌اند', 'بهینه‌سازی سئو'],
+    highlights: [
+      'بهبود 50٪ رتبه سئو در نتایج جستجو',
+      'طراحی مدرن و حرفه‌ای مطابق با هویت برند',
+      'سیستم مدیریت محتوا برای به‌روزرسانی آسان'
     ],
-    liveUrl: 'https://example.com',
-    year: '2025',
-    role: 'UI System + Front-End',
-    duration: '۴ هفته',
-    highlights: ['کامپوننت‌محور', 'فیلترهای سریع', 'حس SaaS مدرن'],
+    links: {
+      website: 'https://example.com/parskhodro'
+    }
   },
-
   {
-    id: 'p3',
-    title: 'وب‌سایت شرکتی (Brand Website)',
-    summary:
-      'وب‌سایت شرکتی با روایت واضح، ساختار دقیق و تصویرسازی حرفه‌ای برای اعتمادسازی و تبدیل بهتر.',
-    category: 'سایت شرکتی',
-    stack: ['Next.js', 'Tailwind', 'SEO', 'Motion'],
-    cover: '/images/portfolio/corporate/cover.jpg',
-    screens: [
-      { label: 'خانه', src: '/images/portfolio/corporate/home.jpg' },
-      { label: 'درباره ما', src: '/images/portfolio/corporate/about.jpg' },
-      { label: 'تماس', src: '/images/portfolio/corporate/contact.jpg' },
+    id: '3',
+    title: 'نرم‌افزار مدیریت مشتریان (CRM)',
+    summary: 'توسعه پلتفرم مدیریت ارتباط با مشتریان با قابلیت‌های پیگیری فروش، گزارش‌گیری و تحلیل داده.',
+    category: 'SaaS',
+    coverImage: '/images/hero-team.jpg',
+    previewImage: '/images/quality-process.jpg',
+    technologies: ['Vue.js', 'Laravel', 'MySQL', 'Docker'],
+    services: ['توسعه اپلیکیشن', 'معماری نرم‌افزار', 'تحلیل داده'],
+    highlights: [
+      'کاهش 25٪ زمان پاسخ به مشتریان',
+      'داشبورد تحلیلی برای تصمیم‌گیری بهتر',
+      'یکپارچه‌سازی با سیستم‌های موجود'
     ],
-    liveUrl: 'https://example.com',
-    year: '2024',
-    role: 'Design + Front-End',
-    duration: '۲ هفته',
-    highlights: ['مینیمال و حرفه‌ای', 'سئو پایه قوی', 'ساختار تمیز'],
+    links: {}
   },
-]
+  {
+    id: '4',
+    title: 'لندینگ پیج کمپین بازاریابی',
+    summary: 'طراحی لندینگ پیج جذاب برای کمپین بازاریابی محصول جدید با تمرکز بر نرخ تبدیل بالا.',
+    category: 'لندینگ',
+    coverImage: '/images/quality-process.jpg',
+    previewImage: '/images/hero-team.jpg',
+    technologies: ['HTML', 'CSS', 'JavaScript', 'GSAP'],
+    services: ['طراحی لندینگ', 'بهینه‌سازی نرخ تبدیل', 'انیمیشن‌های تعاملی'],
+    highlights: [
+      'نرخ تبدیل 12٪ بالاتر از میانگین صنعت',
+      'طراحی کاملاً واکنش‌گرا',
+      'بارگذاری سریع با بهینه‌سازی تصاویر'
+    ],
+    links: {
+      website: 'https://example.com/marketing-campaign'
+    }
+  },
+  {
+    id: '5',
+    title: 'پلتفرم آموزش آنلاین فرادرس',
+    summary: 'توسعه پلتفرم آموزش آنلاین با قابلیت‌های ویدیو، آزمون، گواهی و مدیریت دوره‌ها.',
+    category: 'محصولی',
+    coverImage: '/images/hero-team.jpg',
+    previewImage: '/images/quality-process.jpg',
+    technologies: ['React', 'Django', 'PostgreSQL', 'AWS'],
+    services: ['توسعه پلتفرم', 'یکپارچه‌سازی پرداخت', 'هاستینگ ابری'],
+    highlights: [
+      'پشتیبانی از بیش از 10,000 کاربر همزمان',
+      'سیستم ارزیابی و گواهی‌دهی خودکار',
+      'تحلیل پیشرفت یادگیری دانشجویان'
+    ],
+    links: {
+      website: 'https://example.com/faradars'
+    }
+  },
+  {
+    id: '6',
+    title: 'داشبورد تحلیلی برای استارت‌آپ',
+    summary: 'طراحی و توسعه داشبورد تحلیلی برای نمایش داده‌های کلان و ارائه گزارش‌های مدیریتی.',
+    category: 'SaaS',
+    coverImage: '/images/quality-process.jpg',
+    previewImage: '/images/hero-team.jpg',
+    technologies: ['Angular', 'Python', 'PostgreSQL', 'Chart.js'],
+    services: ['تحلیل داده', 'توسعه داشبورد', 'مشاوره فنی'],
+    highlights: [
+      'نمایش داده‌های زنده در زمان واقعی',
+      'قابلیت سفارشی‌سازی گزارش‌ها',
+      'رابط کاربری ساده برای کاربران غیرفنی'
+    ],
+    links: {}
+  },
+  {
+    id: '7',
+    title: 'وب‌سایت فروشگاهی زنجیره‌ای',
+    summary: 'طراحی وب‌سایت فروشگاهی برای زنجیره‌های فروشگاهی با قابلیت‌های جستجوی پیشرفته و مقایسه محصولات.',
+    category: 'فروشگاهی',
+    coverImage: '/images/hero-team.jpg',
+    previewImage: '/images/quality-process.jpg',
+    technologies: ['Next.js', 'Node.js', 'MongoDB', 'Elasticsearch'],
+    services: ['توسعه وب', 'بهینه‌سازی جستجو', 'یکپارچه‌سازی انبار'],
+    highlights: [
+      'جستجوی سریع در میان هزاران محصول',
+      'سیستم پیشنهاد محصولات مشابه',
+      'پشتیبانی از چندین زبان'
+    ],
+    links: {
+      website: 'https://example.com/chain-stores'
+    }
+  },
+  {
+    id: '8',
+    title: 'پورتال مشتریان شرکت خدماتی',
+    summary: 'توسعه پورتال مشتریان برای ارائه خدمات، پیگیری درخواست‌ها و ارتباط با تیم پشتیبانی.',
+    category: 'شرکتی',
+    coverImage: '/images/quality-process.jpg',
+    previewImage: '/images/hero-team.jpg',
+    technologies: ['React', 'Express.js', 'PostgreSQL', 'Socket.io'],
+    services: ['توسعه پورتال', 'یکپارچه‌سازی سیستم‌ها', 'بهبود تجربه کاربری'],
+    highlights: [
+      'کاهش 40٪ درخواست‌های تلفنی به پشتیبانی',
+      'پیگیری لحظه‌ای وضعیت درخواست‌ها',
+      'سیستم اطلاع‌رسانی خودکار'
+    ],
+    links: {}
+  }
+];

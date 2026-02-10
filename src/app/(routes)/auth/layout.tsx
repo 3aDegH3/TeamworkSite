@@ -1,17 +1,22 @@
-    import { ReactNode } from 'react'
-    import AnimatedBackground from '@/src/components/auth/animated-background'
+import type { ReactNode } from 'react'
+import Header from '@/src/components/layout/header'
+import Footer from '@/src/components/layout/footer'
+import AnimatedBackground from '@/src/components/auth/animated-background'
 
-    export default function AuthLayout({
-    children,
-    }: {
-    children: ReactNode
-    }) {
-    return (
-        <div className="min-h-screen relative w-full h-full">
+export default function AuthLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Header />
+
+      <main className="relative w-full pt-24">
         <AnimatedBackground />
-        <div className="relative z-10 min-h-screen flex items-center justify-center p-4 w-full">
-            {children}
+
+        <div className="relative z-10 min-h-[calc(100vh-6rem)] flex items-center justify-center px-4 py-10">
+          {children}
         </div>
-        </div>
-    )
-    }
+      </main>
+
+      <Footer />
+    </>
+  )
+}
