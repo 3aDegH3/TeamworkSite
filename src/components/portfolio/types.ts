@@ -1,7 +1,9 @@
-// types.ts
-
 export type ProjectCategory = 'فروشگاهی' | 'شرکتی' | 'SaaS' | 'لندینگ' | 'محصولی';
 export type Filter = ProjectCategory | 'all' | null;
+
+export interface ProjectLinks {
+  website?: string;
+}
 
 export interface Project {
   id: string;
@@ -9,6 +11,9 @@ export interface Project {
   category: ProjectCategory;
   coverImage: string;
   previewImage?: string;
+
+  // ✅ اضافه شد
+  links?: ProjectLinks;
 }
 
 export interface ProjectCardProps {

@@ -1,364 +1,429 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Card } from '@/src/components/ui/card';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/src/components/ui/button';
-import { 
-  Maximize2, 
-  Download, 
-  ChevronLeft, 
-  ChevronRight,
+import { Card } from '@/src/components/ui/card';
+import {
   X,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  Loader2
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  User,
+  Sparkles,
+  Link as LinkIcon,
 } from 'lucide-react';
 
-interface DrawerGalleryProps {
-  images: {
-    id: string;
-    src: string;
-    alt?: string;
-    caption?: string;
-  }[];
-  title?: string;
-  className?: string;
+import DrawerGallery from './drawer-gallery';
+// اگر ScrollingPreview داری و می‌خوای نمایش اسکرول داخل Drawer هم داشته باشی:
+import ScrollingPreview from './scrolling-preview';
+
+import type { Project } from './types';
+
+type ProjectStatus = 'completed' | 'in-progress' | 'planned';
+
+export interface ExtendedProject extends Project {
+  client?: string;
+  date?: string; // بهتره ISO باشه ولی همون رشته هم ok
+  description?: string;
+  technologies?: string[];
+  highlights?: string[];
+  status?: ProjectStatus;
+  gallery?: Array<{ id: string; src: string; alt?: string; caption?: string }>;
+  links?: {
+    website?: string;
+    github?: string;
+    caseStudy?: string;
+    demo?: string;
+  };
 }
 
-// Custom icon button component to replace the problematic size="icon"
-const IconButton = ({ 
-  children, 
-  onClick, 
-  className = "", 
-  ariaLabel 
-}: { 
+type Props = {
+  project: ExtendedProject;
+  isOpen: boolean;
+  onClose: () => void;
+  previousProject?: ExtendedProject;
+  nextProject?: ExtendedProject;
+  onProjectChange?: (project: ExtendedProject) => void;
+};
+
+function Chip({
+  children,
+  className = '',
+}: {
   children: React.ReactNode;
-  onClick: (e: React.MouseEvent) => void;
   className?: string;
-  ariaLabel?: string;
-}) => (
-  <button
-    className={`inline-flex items-center justify-center rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground ${className}`}
-    onClick={onClick}
-    aria-label={ariaLabel}
-  >
-    {children}
-  </button>
-);
+}) {
+  return (
+    <span
+      className={[
+        'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium',
+        'bg-background/70 backdrop-blur',
+        className,
+      ].join(' ')}
+    >
+      {children}
+    </span>
+  );
+}
 
-export default function DrawerGallery({ 
-  images, 
-  title = "گالری تصاویر",
-  className = ""
-}: DrawerGalleryProps) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [rotation, setRotation] = useState(0);
-  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
-  const [imageLoadErrors, setImageLoadErrors] = useState<{ [key: string]: boolean }>({});
+function formatFaDate(dateString?: string) {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return dateString;
+  return d.toLocaleDateString('fa-IR', { year: 'numeric', month: 'short' });
+}
 
-  if (!images || images.length === 0) {
-    return null;
+function statusLabel(status?: ProjectStatus) {
+  switch (status) {
+    case 'completed':
+      return { text: 'تکمیل شده', cls: 'border-emerald-300/50 text-emerald-700 bg-emerald-50/60' };
+    case 'in-progress':
+      return { text: 'در حال انجام', cls: 'border-sky-300/50 text-sky-700 bg-sky-50/60' };
+    case 'planned':
+      return { text: 'برنامه‌ریزی شده', cls: 'border-zinc-300/60 text-zinc-700 bg-zinc-50/70' };
+    default:
+      return null;
   }
+}
 
-  const handleImageClick = (index: number) => {
-    setSelectedImageIndex(index);
-    setIsLightboxOpen(true);
-    setIsZoomed(false);
-    setRotation(0);
-  };
+/**
+ * جلوگیری از پرش صفحه هنگام قفل‌کردن اسکرول:
+ * scrollbar که حذف میشه، عرض صفحه تغییر می‌کنه → UI می‌پره.
+ * اینجا paddingRight برابر scrollbarWidth می‌ذاریم تا ثابت بمونه.
+ */
+function lockBodyScroll() {
+  const body = document.body;
+  const html = document.documentElement;
 
-  const handleLightboxClose = () => {
-    setIsLightboxOpen(false);
-    setSelectedImageIndex(null);
-    setIsZoomed(false);
-    setRotation(0);
-  };
+  const scrollBarWidth = window.innerWidth - html.clientWidth;
 
-  const handleNextImage = useCallback(() => {
-    if (selectedImageIndex !== null) {
-      setSelectedImageIndex((prev) => 
-        prev !== null ? (prev + 1) % images.length : 0
-      );
-      setIsZoomed(false);
-      setRotation(0);
-    }
-  }, [selectedImageIndex, images.length]);
+  body.dataset.__drawerScrollLock = '1';
+  body.style.overflow = 'hidden';
+  if (scrollBarWidth > 0) body.style.paddingRight = `${scrollBarWidth}px`;
+}
 
-  const handlePrevImage = useCallback(() => {
-    if (selectedImageIndex !== null) {
-      setSelectedImageIndex((prev) => 
-        prev !== null ? (prev - 1 + images.length) % images.length : 0
-      );
-      setIsZoomed(false);
-      setRotation(0);
-    }
-  }, [selectedImageIndex, images.length]);
+function unlockBodyScroll() {
+  const body = document.body;
+  if (body.dataset.__drawerScrollLock !== '1') return;
 
-  const handleZoomToggle = () => {
-    setIsZoomed(!isZoomed);
-  };
+  body.style.overflow = '';
+  body.style.paddingRight = '';
+  delete body.dataset.__drawerScrollLock;
+}
 
-  const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
+export default function CaseStudyDrawer({
+  project,
+  isOpen,
+  onClose,
+  previousProject,
+  nextProject,
+  onProjectChange,
+}: Props) {
+  const [mounted, setMounted] = useState(false);
+  const [closing, setClosing] = useState(false);
 
-  const handleDownload = () => {
-    if (selectedImageIndex !== null) {
-      const image = images[selectedImageIndex];
-      const link = document.createElement('a');
-      link.href = image.src;
-      link.download = image.alt || `image-${image.id}`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
-  const handleImageLoad = (imageId: string) => {
-    setIsLoading(prev => ({ ...prev, [imageId]: false }));
-  };
+  const status = useMemo(() => statusLabel(project.status), [project.status]);
 
-  const handleImageError = (imageId: string) => {
-    setIsLoading(prev => ({ ...prev, [imageId]: false }));
-    setImageLoadErrors(prev => ({ ...prev, [imageId]: true }));
-  };
+  const requestClose = useCallback(() => {
+    setClosing(true);
+    window.setTimeout(() => {
+      setClosing(false);
+      setMounted(false);
+      onClose();
+    }, 240);
+  }, [onClose]);
 
-  // Keyboard navigation
+  const handlePrev = useCallback(() => {
+    if (!previousProject || !onProjectChange) return;
+    setClosing(true);
+    window.setTimeout(() => {
+      onProjectChange(previousProject);
+      setClosing(false);
+      // اسکرول محتوای Drawer برگرده بالا
+      panelRef.current?.querySelector('[data-drawer-scroll]')?.scrollTo({ top: 0 });
+    }, 220);
+  }, [previousProject, onProjectChange]);
+
+  const handleNext = useCallback(() => {
+    if (!nextProject || !onProjectChange) return;
+    setClosing(true);
+    window.setTimeout(() => {
+      onProjectChange(nextProject);
+      setClosing(false);
+      panelRef.current?.querySelector('[data-drawer-scroll]')?.scrollTo({ top: 0 });
+    }, 220);
+  }, [nextProject, onProjectChange]);
+
+  // mount/unmount + lock scroll
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLightboxOpen) return;
-      
-      switch (e.key) {
-        case 'Escape':
-          handleLightboxClose();
-          break;
-        case 'ArrowRight':
-          handleNextImage();
-          break;
-        case 'ArrowLeft':
-          handlePrevImage();
-          break;
-        case ' ':
-          e.preventDefault();
-          handleZoomToggle();
-          break;
-      }
+    if (isOpen) {
+      setMounted(true);
+      setClosing(false);
+      lockBodyScroll();
+      // فوکوس روی دکمه بستن
+      window.setTimeout(() => closeBtnRef.current?.focus(), 50);
+    } else {
+      unlockBodyScroll();
+      setMounted(false);
+      setClosing(false);
+    }
+
+    return () => {
+      unlockBodyScroll();
+    };
+  }, [isOpen]);
+
+  // ESC close + arrows for nav
+  useEffect(() => {
+    if (!mounted) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') requestClose();
+      if (e.key === 'ArrowLeft') handleNext();  // RTL: چپ = بعدی
+      if (e.key === 'ArrowRight') handlePrev(); // RTL: راست = قبلی
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen, handleNextImage, handlePrevImage]);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mounted, requestClose, handleNext, handlePrev]);
 
-  // Preload images
-  useEffect(() => {
-    images.forEach((image) => {
-      setIsLoading(prev => ({ ...prev, [image.id]: true }));
-      const img = new Image();
-      img.src = image.src;
-      img.onload = () => handleImageLoad(image.id);
-      img.onerror = () => handleImageError(image.id);
-    });
-  }, [images]);
+  if (!mounted) return null;
 
-  const currentImage = selectedImageIndex !== null ? images[selectedImageIndex] : null;
+  const heroSrc = project.previewImage || project.coverImage;
 
   return (
-    <div className={`rtl ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-        <span className="text-sm text-muted-foreground">
-          {images.length} تصویر
-        </span>
-      </div>
-      
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {images.map((image, index) => (
-          <Card
-            key={image.id}
-            className="overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg group relative"
-            onClick={() => handleImageClick(index)}
-          >
-            <div className="relative h-32 overflow-hidden">
-              {/* Loading indicator */}
-              {isLoading[image.id] && (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              )}
-              
-              {/* Error state */}
-              {imageLoadErrors[image.id] && (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">
-                  <div className="text-center text-muted-foreground">
-                    <X className="h-6 w-6 mx-auto mb-1" />
-                    <span className="text-xs">خطا در بارگذاری</span>
-                  </div>
-                </div>
-              )}
-              
-              <img
-                src={image.src}
-                alt={image.alt || `تصویر گالری ${image.id}`}
-                className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${
-                  isLoading[image.id] || imageLoadErrors[image.id] ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
-              
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                <Maximize2 className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              
-              {/* Optional caption overlay */}
-              {image.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-white text-xs">
-                  {image.caption}
-                </div>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
+    <div className="fixed inset-0 z-50" dir="rtl">
+      {/* Overlay */}
+      <div
+        className={[
+          'absolute inset-0 transition-opacity duration-200',
+          closing ? 'opacity-0' : 'opacity-100',
+          'bg-black/55 backdrop-blur-[2px]',
+        ].join(' ')}
+        onMouseDown={requestClose}
+        aria-hidden="true"
+      />
 
-      {/* Lightbox */}
-      {isLightboxOpen && currentImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-          onClick={handleLightboxClose}
-        >
-          <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex flex-col">
-            {/* Header */}
-            <div className="flex justify-between items-center p-4 text-white">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">
-                  {currentImage.alt || `تصویر ${selectedImageIndex! + 1} از ${images.length}`}
-                </h3>
-                {currentImage.caption && (
-                  <span className="text-sm text-white/70">- {currentImage.caption}</span>
+      {/* Panel */}
+      <aside
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`جزئیات پروژه ${project.title}`}
+        className={[
+          'absolute right-0 top-0 h-full w-full md:w-[640px] lg:w-[720px]',
+          'bg-background shadow-2xl border-l border-border',
+          'transition-transform duration-200 will-change-transform',
+          closing ? 'translate-x-full' : 'translate-x-0',
+          'flex flex-col',
+        ].join(' ')}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {/* Header (Sticky) */}
+        <div className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+          <div className="px-5 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Chip className="border-primary/20 bg-primary/5 text-primary">
+                    <Sparkles className="ml-1 h-3.5 w-3.5" />
+                    {project.category}
+                  </Chip>
+                  {status && <Chip className={status.cls}>{status.text}</Chip>}
+                  {project.client && (
+                    <Chip className="text-muted-foreground">
+                      <User className="ml-1 h-3.5 w-3.5" />
+                      {project.client}
+                    </Chip>
+                  )}
+                  {project.date && (
+                    <Chip className="text-muted-foreground">
+                      <Calendar className="ml-1 h-3.5 w-3.5" />
+                      {formatFaDate(project.date)}
+                    </Chip>
+                  )}
+                </div>
+
+                <h2 className="text-xl md:text-2xl font-bold leading-tight truncate">
+                  {project.title}
+                </h2>
+                {project.description && (
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-6">
+                    {project.description}
+                  </p>
                 )}
               </div>
-              
+
+              <button
+                ref={closeBtnRef}
+                type="button"
+                onClick={requestClose}
+                className="shrink-0 rounded-xl p-2 hover:bg-accent transition-colors"
+                aria-label="بستن"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Nav + Links row */}
+            <div className="mt-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                {/* Zoom button */}
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleZoomToggle();
-                  }}
-                  className="text-white hover:bg-white/20"
-                  ariaLabel={isZoomed ? "کوچک کردن" : "بزرگ کردن"}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 px-3"
+                  disabled={!previousProject}
+                  onClick={handlePrev}
                 >
-                  {isZoomed ? <ZoomOut className="h-5 w-5" /> : <ZoomIn className="h-5 w-5" />}
-                </IconButton>
-                
-                {/* Rotate button */}
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRotate();
-                  }}
-                  className="text-white hover:bg-white/20"
-                  ariaLabel="چرخاندن"
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                  قبلی
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 px-3"
+                  disabled={!nextProject}
+                  onClick={handleNext}
                 >
-                  <RotateCw className="h-5 w-5" />
-                </IconButton>
-                
-                {/* Download button */}
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload();
-                  }}
-                  className="text-white hover:bg-white/20"
-                  ariaLabel="دانلود"
-                >
-                  <Download className="h-5 w-5" />
-                </IconButton>
-                
-                {/* Close button */}
-                <IconButton
-                  onClick={handleLightboxClose}
-                  className="text-white hover:bg-white/20"
-                  ariaLabel="بستن"
-                >
-                  <X className="h-5 w-5" />
-                </IconButton>
+                  بعدی
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                </Button>
               </div>
-            </div>
-            
-            {/* Image container */}
-            <div className="flex-1 flex items-center justify-center overflow-hidden relative">
-              {/* Previous button */}
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrevImage();
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 text-white hover:bg-black/50 z-10"
-                ariaLabel="تصویر قبلی"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </IconButton>
-              
-              {/* Next button */}
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNextImage();
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 text-white hover:bg-black/50 z-10"
-                ariaLabel="تصویر بعدی"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </IconButton>
-              
-              {/* Image */}
-              <div 
-                className={`relative max-w-full max-h-full overflow-hidden ${
-                  isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleZoomToggle();
-                }}
-              >
-                <img
-                  src={currentImage.src}
-                  alt={currentImage.alt || `تصویر ${selectedImageIndex! + 1}`}
-                  className={`max-w-full max-h-full object-contain transition-transform duration-300 ${
-                    isZoomed ? 'scale-150' : 'scale-100'
-                  }`}
-                  style={{ transform: `rotate(${rotation}deg) ${isZoomed ? 'scale(1.5)' : 'scale(1)'}` }}
-                />
+
+              <div className="flex items-center gap-2">
+                {project.links?.website && (
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="h-9"
+                    onClick={() => window.open(project.links?.website, '_blank')}
+                  >
+                    مشاهده وب‌سایت
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                  </Button>
+                )}
+                {project.links?.caseStudy && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9"
+                    onClick={() => window.open(project.links?.caseStudy, '_blank')}
+                  >
+                    کیس‌استادی
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                  </Button>
+                )}
               </div>
-            </div>
-            
-            {/* Footer with image indicators */}
-            <div className="flex justify-center items-center gap-2 p-4">
-              {images.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === selectedImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedImageIndex(index);
-                    setIsZoomed(false);
-                    setRotation(0);
-                  }}
-                  aria-label={`رفتن به تصویر ${index + 1}`}
-                />
-              ))}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Body (Scrollable) */}
+        <div
+          data-drawer-scroll
+          className="flex-1 overflow-y-auto overscroll-contain"
+        >
+          {/* Hero */}
+          <div className="p-5">
+            <Card className="overflow-hidden border-border/60">
+              <div className="relative">
+                {/* اگر ScrollingPreview داری: (پریویو اسکرولی داخل Drawer هم جذاب میشه) */}
+                <ScrollingPreview
+                  imageSrc={heroSrc}
+                  height={380}
+                  scrollSpeed={85}  // سرعت بیشتر
+                  title={project.title}
+                  showControls={true}
+                />
+
+                {/* اگر نمی‌خوای ScrollingPreview، این بخش رو جایگزین کن:
+                <div className="relative aspect-[16/10]">
+                  <Image src={heroSrc} alt={project.title} fill className="object-cover" sizes="(max-width:768px) 100vw, 640px" />
+                </div>
+                */}
+              </div>
+            </Card>
+          </div>
+
+          {/* Sections */}
+          <div className="px-5 pb-8 space-y-6">
+            {/* Technologies */}
+            {project.technologies && project.technologies.length > 0 && (
+              <Card className="p-5 border-border/60">
+                <h3 className="text-base font-semibold mb-3">تکنولوژی‌ها</h3>
+                <div className="flex flex-wrap gap-2">
+                  {project.technologies.map((t, i) => (
+                    <span
+                      key={`${t}-${i}`}
+                      className="rounded-full bg-muted px-3 py-1 text-xs text-foreground/90"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Highlights */}
+            {project.highlights && project.highlights.length > 0 && (
+              <Card className="p-5 border-border/60">
+                <h3 className="text-base font-semibold mb-3">نکات برجسته</h3>
+                <ul className="space-y-2">
+                  {project.highlights.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+                      <span className="text-sm text-muted-foreground leading-6">{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {/* Gallery */}
+            {project.gallery && project.gallery.length > 0 && (
+              <Card className="p-5 border-border/60">
+                <h3 className="text-base font-semibold mb-4">گالری</h3>
+                <DrawerGallery
+                  images={project.gallery}
+                  title={project.title}
+                />
+              </Card>
+            )}
+
+            {/* CTA */}
+            <Card className="p-5 border-border/60 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
+              <h3 className="text-base font-semibold">پروژه مشابه می‌خوای؟</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-6">
+                اگر سبک این پروژه رو دوست داشتی، می‌تونیم مشابهش رو برای کسب‌وکار شما هم طراحی کنیم.
+              </p>
+
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                <Button type="button" className="h-10">
+                  درخواست مشاوره
+                </Button>
+                {project.links?.website && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10"
+                    onClick={() => window.open(project.links?.website, '_blank')}
+                  >
+                    مشاهده وب‌سایت
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                  </Button>
+                )}
+              </div>
+            </Card>
+
+            <div className="h-6" />
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
