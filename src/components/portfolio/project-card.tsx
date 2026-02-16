@@ -141,10 +141,11 @@ export default function ProjectCard({
               src={previewSrc}
               alt={project.title}
               height={260}
-              speed={38}
-              active={isHovered}          // ✅ این کلید حل پرش بود
+              speed={110}          // ✅ سریع‌تر
+              active={isHovered}
               className="rounded-none"
             />
+
 
             {/* gradient overlay */}
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/55 via-transparent to-transparent" />

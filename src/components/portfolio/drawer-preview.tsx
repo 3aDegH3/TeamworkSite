@@ -1,52 +1,50 @@
 'use client';
 
-import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 
-interface DrawerPreviewProps {
+type Props = {
   src: string;
   alt: string;
-  href?: string;          // لینک سایت پروژه (اختیاری)
-  className?: string;
+  href?: string;
+};
+
+function normalize(src: string) {
+  if (!src) return '';
+  return src.replace(/^public\//, '/').replace(/^\.\//, '/');
 }
 
-export default function DrawerPreview({ src, alt, href, className = '' }: DrawerPreviewProps) {
-  const [error, setError] = useState(false);
+export default function DrawerPreview({ src, alt, href }: Props) {
+  const [err, setErr] = useState(false);
+  const s = useMemo(() => normalize(src), [src]);
 
-  const content = (
-    <div className={`relative w-full overflow-hidden rounded-xl border border-border bg-muted ${className}`}>
-      <div className="relative w-full aspect-[16/10]">
-        {!error ? (
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 640px"
-            className="object-cover"
-            onError={() => setError(true)}
-          />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
-            تصویر در دسترس نیست
-          </div>
-        )}
-      </div>
+  const ImageEl = (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-muted">
+      <img
+        src={s}
+        alt={alt}
+        className="block w-full h-auto"
+        loading="eager"
+        decoding="async"
+        onError={() => setErr(true)}
+      />
+
+      {err && (
+        <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+          تصویر در دسترس نیست
+        </div>
+      )}
     </div>
   );
 
-  if (!href) return content;
+  // اگر لینک سایت پروژه هست => کلیک روی عکس بره اونجا
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className="block">
+        {ImageEl}
+      </a>
+    );
+  }
 
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label="مشاهده سایت پروژه"
-      className="block"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {content}
-    </a>
-  );
+  return ImageEl;
 }

@@ -10,10 +10,8 @@ function normalizeSrc(input?: ImageLike): string {
   let s = typeof input === 'string' ? input : (input as any).src;
   if (!s) return '';
 
-  // اگر اشتباهی public/ یا ./ گذاشتی
   s = s.replace(/^public\//, '/').replace(/^\.\//, '/');
 
-  // اگر مسیر نسبی بدون / بود، درستش کن
   if (
     !s.startsWith('/') &&
     !s.startsWith('http://') &&
@@ -40,7 +38,7 @@ export default function ScrollingPreview({
   src,
   alt = '',
   height = 260,
-  speed = 38,
+  speed = 70,          // ✅ پیش‌فرض سریع‌تر
   active = false,
   className = '',
 }: Props) {
@@ -58,6 +56,7 @@ export default function ScrollingPreview({
   const [cw, setCw] = useState(0);
   const [nat, setNat] = useState({ w: 0, h: 0 });
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   // ارتفاع رندر شده تصویر (width:100% و height:auto)
   const renderedH = useMemo(() => {
@@ -65,7 +64,9 @@ export default function ScrollingPreview({
     return cw * (nat.h / nat.w);
   }, [cw, nat]);
 
-  const scrollDistance = Math.max(0, renderedH - height);
+  const scrollDistance = useMemo(() => {
+    return Math.max(0, renderedH - height);
+  }, [renderedH, height]);
 
   const stop = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -78,9 +79,7 @@ export default function ScrollingPreview({
       const el = layerRef.current;
       if (!el) return;
 
-      // اگر اسکرول نداریم، موقع hover یه زوم خیلی ملایم بده
       const scale = active && scrollDistance <= 0 ? 1.03 : 1;
-
       el.style.transition = withTransition ? 'transform 350ms ease' : 'none';
       el.style.transform = `translate3d(0, -${y}px, 0) scale(${scale})`;
     },
@@ -98,9 +97,13 @@ export default function ScrollingPreview({
     }, 360);
   }, [applyTransform, stop]);
 
+  // ✅ tick باید active/loaded را هم چک کند تا بعد refresh گیر نکند
   const tick = useCallback(
     (ts: number) => {
-      if (scrollDistance <= 0) return;
+      if (!active || !loaded || scrollDistance <= 0) {
+        stop();
+        return;
+      }
 
       if (!lastTsRef.current) lastTsRef.current = ts;
       const dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
@@ -122,7 +125,7 @@ export default function ScrollingPreview({
 
       rafRef.current = requestAnimationFrame(tick);
     },
-    [applyTransform, scrollDistance, speed]
+    [active, loaded, scrollDistance, speed, applyTransform, stop]
   );
 
   const start = useCallback(() => {
@@ -147,22 +150,38 @@ export default function ScrollingPreview({
     return () => ro.disconnect();
   }, []);
 
+  // وقتی src عوض شد ریست کامل
+  useEffect(() => {
+    setError(false);
+    setLoaded(false);
+    setNat({ w: 0, h: 0 });
+    resetToTop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [srcStr]);
+
   // وقتی عکس load شد
   const onLoad = useCallback(() => {
     const img = imgRef.current;
     if (!img) return;
+
     setError(false);
+    setLoaded(true);
     setNat({ w: img.naturalWidth || 0, h: img.naturalHeight || 0 });
 
     yRef.current = 0;
     dirRef.current = 1;
     lastTsRef.current = 0;
     applyTransform(0, false);
+
+    // ✅ یک بار هم بعد از فریم بعدی، چون گاهی cw هنوز 0 است
+    requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (el) setCw(Math.round(el.getBoundingClientRect().width));
+    });
   }, [applyTransform]);
 
-  // کنترل شروع/توقف با active
+  // ✅ کنترل شروع/توقف: وابسته به loaded هم هست
   useEffect(() => {
-    // اگر src خالی یا error داریم، هیچی
     if (!srcStr || error) return;
 
     if (!active) {
@@ -170,16 +189,16 @@ export default function ScrollingPreview({
       return;
     }
 
-    if (scrollDistance > 0) start();
-    else applyTransform(0, true); // برای زوم ملایم
+    if (loaded && scrollDistance > 0) start();
+    else applyTransform(0, true);
 
     return () => stop();
-  }, [active, srcStr, error, scrollDistance, start, stop, resetToTop, applyTransform]);
+  }, [active, srcStr, error, loaded, scrollDistance, start, stop, resetToTop, applyTransform]);
 
-  // اگر اسکرول نداریم، همیشه بالا باشه
+  // اگر اسکرول نداریم، همیشه بالا
   useEffect(() => {
-    if (scrollDistance <= 0) resetToTop();
-  }, [scrollDistance, resetToTop]);
+    if (loaded && scrollDistance <= 0) resetToTop();
+  }, [loaded, scrollDistance, resetToTop]);
 
   return (
     <div ref={containerRef} className={`relative overflow-hidden ${className}`} style={{ height }}>
@@ -196,7 +215,10 @@ export default function ScrollingPreview({
             loading="lazy"
             decoding="async"
             onLoad={onLoad}
-            onError={() => setError(true)}
+            onError={() => {
+              setError(true);
+              setLoaded(false);
+            }}
             className="block w-full h-auto select-none pointer-events-none"
             draggable={false}
           />
