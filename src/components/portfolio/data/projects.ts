@@ -5,8 +5,8 @@ export const projects: Project[] = [
     id: "digikala",
     title: "پلتفرم فروشگاهی دیجی‌کالا",
     category: "فروشگاهی" as ProjectCategory,
-    coverImage: "/images/portfolio/digikala/cover.jpg",
-    previewImage: "/images/portfolio/digikala/preview.png"
+    coverImage: "/images/portfolio/marketing-landing/cover.png",
+    previewImage: "/images/portfolio/marketing-landing/preview.png"
   },
   {
     id: "pars-khodro",
