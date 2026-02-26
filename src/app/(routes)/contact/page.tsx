@@ -271,7 +271,7 @@ export default function ContactPage() {
               <CardContent className="relative z-10 pt-0">
                 <div className="space-y-4">
                   <a
-                    href="mailto:info@webtree.ir"
+                    href="mailto:sadeghox@gmail.com"
                     className="group flex items-start p-3 rounded-lg hover:bg-surface/60 transition-colors duration-200"
                   >
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center ml-3 group-hover:scale-110 transition-transform duration-200">
@@ -279,7 +279,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-foreground">ایمیل</h3>
-                      <p className="text-sm text-muted-foreground group-hover:text-primary">info@webtree.ir</p>
+                      <p className="text-sm text-muted-foreground group-hover:text-primary">sadeghox@gmail.com</p>
                     </div>
                   </a>
 
@@ -292,7 +292,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-foreground">تلفن</h3>
-                      <p className="text-sm text-muted-foreground group-hover:text-primary">۰۲۱-۸۹۰۱۲۳۴۵</p>
+                      <p className="text-sm text-muted-foreground group-hover:text-primary">09017382848</p>
                     </div>
                   </a>
 
@@ -302,7 +302,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-foreground">آدرس</h3>
-                      <p className="text-sm text-muted-foreground">تهران، خیابان ولیعصر، پلاک ۱۲۳</p>
+                      <p className="text-sm text-muted-foreground">اصفهان</p>
                     </div>
                   </div>
                 </div>
@@ -346,23 +346,13 @@ export default function ContactPage() {
                 <div className="mt-4 p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-border/60">
                   <p className="text-xs text-muted-foreground flex items-center">
                     <Clock className="w-3 h-3 ml-2 text-primary" />
-                    بهترین زمان برای تماس: ۱۰:۰۰ تا ۱۶:۰۰
+                    بهترین زمان برای تماس: ۱۶:۰۰ تا ۲۲:۰۰
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl p-4 text-center border border-border">
-                <div className="text-2xl font-bold text-primary">۵+</div>
-                <div className="text-sm text-muted-foreground">سال تجربه</div>
-              </div>
-              <div className="bg-gradient-to-br from-secondary/10 to-secondary/20 rounded-xl p-4 text-center border border-border">
-                <div className="text-2xl font-bold text-secondary">۱۰۰+</div>
-                <div className="text-sm text-muted-foreground">مشتری راضی</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

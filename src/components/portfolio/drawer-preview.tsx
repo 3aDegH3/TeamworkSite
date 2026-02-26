@@ -37,7 +37,6 @@ export default function DrawerPreview({ src, alt, href }: Props) {
     </div>
   );
 
-  // اگر لینک سایت پروژه هست => کلیک روی عکس بره اونجا
   if (href) {
     return (
       <a href={href} target="_blank" rel="noreferrer" className="block">

@@ -125,11 +125,11 @@ export default function Footer() {
                 <div className="space-y-4">
                   <div className="flex items-center text-foreground/70">
                     <Mail className="h-5 w-5 ml-3 text-primary" />
-                    <span>info@webtree.ir</span>
+                    <span>sadeghox@gmail.com</span>
                   </div>
                   <div className="flex items-center text-foreground/70">
                     <Phone className="h-5 w-5 ml-3 text-primary" />
-                    <span>۰۲۱-۸۹۰۱۲۳۴۵</span>
+                    <span>09017382848</span>
                   </div>
                 </div>
 

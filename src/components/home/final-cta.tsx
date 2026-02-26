@@ -19,8 +19,8 @@ export default function FinalCTA() {
             </Button>
 
             <div className="mt-8 space-y-3 opacity-90">
-              <div className="flex items-center"><Mail className="ml-2 h-5 w-5" /> info@webtree.ir</div>
-              <div className="flex items-center"><Phone className="ml-2 h-5 w-5" /> ۰۲۱-۸۹۰۱۲۳۴۵</div>
+              <div className="flex items-center"><Mail className="ml-2 h-5 w-5" /> sadeghox@gmail.com</div>
+              <div className="flex items-center"><Phone className="ml-2 h-5 w-5" /> 09017382848</div>
             </div>
           </div>
 

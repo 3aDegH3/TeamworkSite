@@ -128,7 +128,7 @@ const processSteps = [
 
 export default function Process() {
   const [activeStep, setActiveStep] = useState(1)
-  const [expandedStep, setExpandedStep] = useState<number | null>(null)
+  const [expandedStep, setExpandedStep] = useState<number>(1) // Initialize with first step expanded
   const [isVisible, setIsVisible] = useState(false)
   const [isAutoPlay, setIsAutoPlay] = useState(true)
   const [isHovering, setIsHovering] = useState(false)
@@ -176,6 +176,7 @@ export default function Process() {
   // Handle step click
   const handleStepClick = (stepId: number) => {
     setActiveStep(stepId)
+    setExpandedStep(stepId) // Also expand the clicked step
     setIsAutoPlay(false) // Pause autoplay on manual interaction
     
     // Resume autoplay after idle time
@@ -394,7 +395,7 @@ export default function Process() {
                       {step.outcome}
                     </p>
                     
-                    {/* Details Accordion */}
+                    {/* Details Accordion - Always expanded on mobile */}
                     <div className="mt-2">
                       <button
                         onClick={(e) => {
@@ -411,22 +412,23 @@ export default function Process() {
                         )}
                       </button>
                       
-                      {expandedStep === step.id && (
-                        <div className="mt-2 p-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-700/50 text-sm text-gray-600 dark:text-gray-300">
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{step.detailsTitle}</h4>
-                          <ul className="space-y-1 mb-3">
-                            {step.detailsBullets.map((bullet: string, index: number) => (
-                              <li key={index} className="flex items-start">
-                                <span className="text-blue-500 dark:text-blue-400 ml-2">•</span>
-                                {bullet}
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="flex flex-wrap gap-2">
-                            {renderDeliverables(step.deliverables)}
-                          </div>
+                      <div className={cn(
+                        "mt-2 p-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-700/50 text-sm text-gray-600 dark:text-gray-300 transition-all duration-300",
+                        expandedStep === step.id ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+                      )}>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{step.detailsTitle}</h4>
+                        <ul className="space-y-1 mb-3">
+                          {step.detailsBullets.map((bullet: string, index: number) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-blue-500 dark:text-blue-400 ml-2">•</span>
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex flex-wrap gap-2">
+                          {renderDeliverables(step.deliverables)}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,7 +437,7 @@ export default function Process() {
           </div>
         </div>
         
-        {/* Active Step Details (Desktop) */}
+        {/* Active Step Details (Desktop) - Always expanded */}
         <div 
           className={cn(
             "hidden lg:block mt-12 p-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl transition-all duration-500",
@@ -471,7 +473,7 @@ export default function Process() {
                   {processSteps[activeStep - 1].outcome}
                 </p>
                 
-                {/* Details Accordion */}
+                {/* Details Accordion - Always expanded */}
                 <button
                   onClick={() => toggleDetails(activeStep)}
                   className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mb-4"
@@ -484,11 +486,8 @@ export default function Process() {
                   )}
                 </button>
                 
-                {/* Accordion Content */}
-                <div className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  expandedStep === activeStep ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                )}>
+                {/* Accordion Content - Always expanded by default */}
+                <div className="max-h-96 opacity-100 transition-all duration-300">
                   <ul className="space-y-2 mb-4">
                     {processSteps[activeStep - 1].detailsBullets.map((bullet: string, index: number) => (
                       <li key={index} className="flex items-start text-gray-600 dark:text-gray-300">

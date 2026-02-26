@@ -66,13 +66,13 @@ export default function CtaSection() {
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <Mail className="h-5 w-5" />
                   </div>
-                  <span>info@webtree.ir</span>
+                  <span>sadeghox@gmail.com</span>
                 </div>
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <Phone className="h-5 w-5" />
                   </div>
-                  <span>۰۲۱-۸۹۰۱۲۳۴۵</span>
+                  <span>09017382848</span>
                 </div>
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
